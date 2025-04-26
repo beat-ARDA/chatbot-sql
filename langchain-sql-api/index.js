@@ -10,13 +10,60 @@ import { readFile } from 'fs/promises';
 const file = await readFile(new URL('./models/shipments.json', import.meta.url));
 const data = JSON.parse(file);
 
+const json = {
+    tables: {
+        V_PROD_SHIPMENTS: {
+            alias: "envíos, shipments, guias",
+            role: "fact",
+            description: "Registros de envíos. Usar como tabla principal para métricas de envíos.",
+            columns: {
+                ID: { "synonyms": ["envío id", "id del envio"], "type": "attribute" },
+                COMPANY_ID: { "synonyms": ["id cliente"], "type": "attribute" },
+                CREATED_AT: { "synonyms": ["fecha de envío"], "type": "attribute" }
+            }
+        },
+        V_PROD_COMPANIES: {
+            alias: "clientes",
+            role: "dimension",
+            description: "Datos de clientes. Solo unir si se necesitan datos del cliente.",
+            columns: {
+                ID: { "synonyms": ["cliente id", "empresa id"], "type": "attribute" },
+                NAME: { "synonyms": ["nombre empresa", "nombre cliente"], "type": "attribute" }
+            }
+        },
+        V_PROD_USERS: {
+            alias: "usuarios",
+            role: "support",
+            description: "Usuarios del sistema, no representan clientes ni envíos",
+            columns: {
+                ID: { "synonyms": ["usuario id"], "type": "attribute" },
+                EMAIL: { "synonyms": ["correo usuario", "email usuario"], "type": "attribute" },
+                COMPANY_ID: { "synonyms": ["cliente id", "empresa id"], "type": "attribute" },
+                CREATED_AT: { "synonyms": ["registro", "alta"], "type": "attribute" }
+            }
+        }
+    },
+    relationships: [
+        {
+            from: "V_PROD_SHIPMENTS.COMPANY_ID",
+            to: "V_PROD_COMPANIES.ID",
+            type: "many-to-one"
+        },
+        {
+            from: "V_PROD_USERS.COMPANY_ID",
+            to: "V_PROD_COMPANIES.ID",
+            type: "many-to-one"
+        }
+    ]
+}
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 const dbSnowflake = new SnowflakeDb();
 
 const model = new ChatOpenAI({
-    modelName: "gpt-4-turbo",
+    modelName: "gpt-3.5-turbo",
     temperature: 0,
     openAIApiKey: process.env.OPENAI_API_KEY,
 });
@@ -54,7 +101,7 @@ app.post("/sql", async (req, res) => {
     try {
         const { question } = req.body;
 
-        const semanticText = Object.entries(data.tables)
+        const semanticText = Object.entries(json.tables)
             .map(([table, def]) => {
                 const columns = Object.entries(def.columns)
                     .map(([col, meta]) => {

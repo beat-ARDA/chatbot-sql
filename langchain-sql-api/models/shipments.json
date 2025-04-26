@@ -1,7 +1,7 @@
 {
     "tables": {
         "V_PROD_SHIPMENTS": {
-            "alias": "envíos, shipments",
+            "alias": "envíos, shipments, guias",
             "role": "fact",
             "description": "Registros de envíos. Usar como tabla principal para métricas de envíos.",
             "columns": {
