@@ -1,57 +1,159 @@
 {
     "tables": {
-      "V_PROD_SHIPMENTS": {
-        "alias": "envíos, shipments, guias",
-        "role": "fact",
-        "description": "Registros de envíos. Usar como tabla principal para métricas de envíos.",
-        "columns": {
-          "ID": { "synonyms": ["envío id", "id del envio"], "type": "attribute" },
-          "COMPANY_ID": { "synonyms": ["id cliente"], "type": "attribute" },
-          "CREATED_AT": { "synonyms": ["fecha de envío"], "type": "attribute" }
+        "V_PROD_SHIPMENTS": {
+            "alias": "envíos, shipments, guias",
+            "role": "fact",
+            "description": "Registros de envíos. Usar como tabla principal para métricas de envíos.",
+            "columns": {
+                "ID": {
+                    "synonyms": [
+                        "envío id",
+                        "id del envio",
+                        "id de la guia",
+                        "guia id"
+                    ],
+                    "type": "attribute"
+                },
+                "COMPANY_ID": {
+                    "synonyms": [
+                        "id cliente, id compañia, id company"
+                    ],
+                    "type": "attribute"
+                },
+                "CREATED_AT": {
+                    "synonyms": [
+                        "creacion del envio",
+                        "fecha de creacion del envio",
+                        "fecha de creacion del envio",
+                        "fecha de creacion de la guia",
+                        "fecha de creacion de la guia"
+                    ],
+                    "type": "attribute"
+                }
+            },
+            "measures": {
+                "total_envios": {
+                    "expression": "COUNT(ID)",
+                    "synonyms": [
+                        "total de envíos",
+                        "cantidad de envíos",
+                        "envíos realizados",
+                        "total de guias",
+                        "cantidad de guias",
+                        "guias realizadas"
+                    ]
+                },
+                "envios_distintos_clientes": {
+                    "expression": "COUNT(DISTINCT COMPANY_ID)",
+                    "synonyms": [
+                        "clientes únicos",
+                        "clientes que enviaron",
+                        "distintos clientes",
+                        "total de clientes con envios",
+                        "compañias únicas",
+                        "compañias que enviaron",
+                        "distintas compañias",
+                        "total de compañias con envios"
+                    ]
+                },
+                "total_clientes": {
+                    "expression": "COUNT(DISTINCT COMPANY_ID)",
+                    "synonyms": [
+                        "total de clientes",
+                        "total de clientes diferentes",
+                        "cantidad de clientes",
+                        "cantidad de clientes diferentes",
+                        "cantidad de empresas",
+                        "cantidad de empresas diferentes"
+                    ]
+                }
+            }
         },
-        "measures": {
-          "total_envios": {
-            "expression": "COUNT(ID)",
-            "synonyms": ["total de envíos", "cantidad de envíos", "envíos realizados"]
-          },
-          "envios_distintos_clientes": {
-            "expression": "COUNT(DISTINCT COMPANY_ID)",
-            "synonyms": ["clientes únicos", "clientes que enviaron", "distintos clientes"]
-          }
+        "V_PROD_COMPANIES": {
+            "alias": "clientes",
+            "role": "dimension",
+            "description": "Datos de clientes o compañias. Solo unir si se necesitan datos del cliente o compañias.",
+            "columns": {
+                "ID": {
+                    "synonyms": [
+                        "cliente id",
+                        "empresa id",
+                        "compañia id",
+                        "id cliente",
+                        "id empresa",
+                        "id compañia"
+                    ],
+                    "type": "attribute"
+                },
+                "NAME": {
+                    "synonyms": [
+                        "nombre empresa",
+                        "nombre cliente"
+                    ],
+                    "type": "attribute"
+                }
+            },
+            "measures": {
+                "total_clientes": {
+                    "expression": "COUNT(ID)",
+                    "synonyms": [
+                        "total de clientes",
+                        "total de clientes diferentes",
+                        "total de empresas",
+                        "total de empresas diferentes",
+                        "cantidad de clientes",
+                        "cantidad de clientes diferentes",
+                        "cantidad de empresas",
+                        "cantidad de empresas diferentes"
+                    ]
+                }
+            }
+        },
+        "V_PROD_USERS": {
+            "alias": "usuarios",
+            "role": "support",
+            "description": "Usuarios del sistema, no representan clientes ni envíos.",
+            "columns": {
+                "ID": {
+                    "synonyms": [
+                        "usuario id"
+                    ],
+                    "type": "attribute"
+                },
+                "EMAIL": {
+                    "synonyms": [
+                        "correo usuario",
+                        "email usuario"
+                    ],
+                    "type": "attribute"
+                },
+                "COMPANY_ID": {
+                    "synonyms": [
+                        "cliente id",
+                        "empresa id"
+                    ],
+                    "type": "attribute"
+                },
+                "CREATED_AT": {
+                    "synonyms": [
+                        "registro",
+                        "alta"
+                    ],
+                    "type": "attribute"
+                }
+            }
         }
-      },
-      "V_PROD_COMPANIES": {
-        "alias": "clientes",
-        "role": "dimension",
-        "description": "Datos de clientes. Solo unir si se necesitan datos del cliente.",
-        "columns": {
-          "ID": { "synonyms": ["cliente id", "empresa id"], "type": "attribute" },
-          "NAME": { "synonyms": ["nombre empresa", "nombre cliente"], "type": "attribute" }
-        }
-      },
-      "V_PROD_USERS": {
-        "alias": "usuarios",
-        "role": "support",
-        "description": "Usuarios del sistema, no representan clientes ni envíos.",
-        "columns": {
-          "ID": { "synonyms": ["usuario id"], "type": "attribute" },
-          "EMAIL": { "synonyms": ["correo usuario", "email usuario"], "type": "attribute" },
-          "COMPANY_ID": { "synonyms": ["cliente id", "empresa id"], "type": "attribute" },
-          "CREATED_AT": { "synonyms": ["registro", "alta"], "type": "attribute" }
-        }
-      }
     },
     "relationships": [
-      {
-        "from": "V_PROD_SHIPMENTS.COMPANY_ID",
-        "to": "V_PROD_COMPANIES.ID",
-        "type": "many-to-one"
-      },
-      {
-        "from": "V_PROD_USERS.COMPANY_ID",
-        "to": "V_PROD_COMPANIES.ID",
-        "type": "many-to-one"
-      }
+        {
+            "from": "V_PROD_SHIPMENTS.COMPANY_ID",
+            "to": "V_PROD_COMPANIES.ID",
+            "type": "many-to-one"
+        },
+        {
+            "from": "V_PROD_USERS.COMPANY_ID",
+            "to": "V_PROD_COMPANIES.ID",
+            "type": "many-to-one"
+        }
     ]
-  }
-  
+}

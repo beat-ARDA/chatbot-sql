@@ -71,4 +71,19 @@ export class SnowflakeDb {
     getConnection() {
         return this.connection;
     }
+
+    async executeQuery(sqlText) {
+        return new Promise((resolve, reject) => {
+            this.connection.execute({
+                sqlText,
+                complete: (err, stmt, rows) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(rows);
+                    }
+                }
+            });
+        });
+    }
 }
