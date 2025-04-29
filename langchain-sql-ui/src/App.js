@@ -1,18 +1,40 @@
 import React, { useState } from "react";
 import axios from "axios";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar, Line } from "react-chartjs-2"; // 👈 puedes usar Bar o Line
 import "./App.css";
+
+// Registrar componentes de Chart.js
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend
+);
 
 function App() {
   const [question, setQuestion] = useState("");
   const [sql, setSql] = useState("");
-  const [result, setResult] = useState([]); // ⬅️ Resultado de la base de datos
+  const [result, setResult] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setSql("");
-    setResult([]); // Limpiar resultados previos
+    setResult([]);
 
     try {
       const res = await axios.post("http://localhost:3001/sql", { question });
@@ -27,6 +49,20 @@ function App() {
 
     setLoading(false);
   };
+
+  // 🔥 Construir datos para la gráfica si hay resultados
+  const chartData = result.length > 0 ? {
+    labels: result.map((row) => Object.values(row)[0]), // primer columna como etiqueta
+    datasets: [
+      {
+        label: "Valor",
+        data: result.map((row) => Object.values(row)[1]), // segunda columna como valor
+        backgroundColor: "rgba(75, 192, 192, 0.5)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+      },
+    ],
+  } : null;
 
   return (
     <div className="App">
@@ -56,14 +92,12 @@ function App() {
           <table>
             <thead>
               <tr>
-                {/* Mostrar los encabezados dinámicamente */}
                 {Object.keys(result[0]).map((key) => (
                   <th key={key}>{key}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {/* Mostrar las filas dinámicamente */}
               {result.map((row, idx) => (
                 <tr key={idx}>
                   {Object.values(row).map((val, idx2) => (
@@ -73,6 +107,14 @@ function App() {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {chartData && (
+        <div style={{ marginTop: 30 }}>
+          <h3>📊 Gráfica:</h3>
+          <Bar data={chartData} options={{ responsive: true }} />
+          {/* Si quieres de líneas cambia <Bar /> por <Line /> */}
         </div>
       )}
     </div>
