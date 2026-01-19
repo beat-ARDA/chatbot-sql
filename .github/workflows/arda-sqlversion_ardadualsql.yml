@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - arda/sqlVersion
+    paths:
+      - "langchain-sql-api/**"
   workflow_dispatch:
 
 jobs:

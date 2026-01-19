@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - arda/sqlVersion
+    paths:
+      - "langchain-sql-ui/**"
   workflow_dispatch:
 
 jobs:
@@ -21,9 +23,10 @@ jobs:
       - name: Set up Node.js version
         uses: actions/setup-node@v3
         with:
-          node-version: '20.x'
+          node-version: "20.x"
 
       - name: npm install, build, and test
+        working-directory: ./langchain-sql-ui
         run: |
           npm install
           npm run build --if-present
@@ -33,7 +36,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: node-app
-          path: .
+          path: ./langchain-sql-api/
+          include-hidden-files: true
 
   deploy:
     runs-on: ubuntu-latest
@@ -47,7 +51,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-      
+
       - name: Login to Azure
         uses: azure/login@v2
         with:
@@ -55,11 +59,10 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_2B31C344B1524894B48EF43AE517CA19 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D13B2105F0BA45F4850D493157B6C98D }}
 
-      - name: 'Deploy to Azure Web App'
+      - name: "Deploy to Azure Web App"
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'chatsqlui'
-          slot-name: 'Production'
+          app-name: "chatsqlui"
+          slot-name: "Production"
           package: .
-          
