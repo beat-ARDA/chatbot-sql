@@ -96,7 +96,7 @@ app.post("/sql", async (req, res) => {
 
 db.connect().then(() => {
     const PORT = process.env.PORT || 3001;
-    app.listen(3001, () => {
-        console.log(`🚀 Engine [${DB_TYPE}] corriendo en http://localhost:3001`);
+    app.listen(PORT, "0.0.0.0", () => {
+        console.log(`🚀 Engine [${DB_TYPE}] corriendo en puerto ${PORT}`);
     });
 });

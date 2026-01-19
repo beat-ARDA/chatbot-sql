@@ -7,9 +7,16 @@ export class SqlServerDb {
             password: process.env.SQLCLOUD_PASSWORD,
             server: process.env.SQLCLOUD_SERVER,
             database: process.env.SQLCLOUD_DATABASE,
+            port: 1433,
             options: {
                 encrypt: true,
-                trustServerCertificate: true
+                trustServerCertificate: false,
+                connectTimeout: 30000
+            },
+            pool: {
+                max: 10,
+                min: 0,
+                idleTimeoutMillis: 30000
             }
         };
 
@@ -18,13 +25,13 @@ export class SqlServerDb {
 
     async connect() {
         try {
-            await sql.connect(this.config);
+            const pool = await sql.connect(this.config);
+            console.log("✅ Conexión exitosa a SQL Server");
 
-            const result = await sql.query(`
+            const result = await pool.query(`
                 SELECT TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME
                 FROM INFORMATION_SCHEMA.COLUMNS
                 WHERE TABLE_SCHEMA IN ('Sales', 'Production', 'Person')
-
             `);
 
             const agrupado = {};
@@ -39,6 +46,7 @@ export class SqlServerDb {
                 .join("\n");
 
         } catch (err) {
+            console.error("❌ Error de conexión SQL:", err.message);
             throw err;
         }
     }
