@@ -1,0 +1,101 @@
+{
+    "domain": "Ventas",
+    "tables": {
+        "Sales.SalesOrderHeader": {
+            "alias": "ordenes, ventas",
+            "role": "fact",
+            "description": "Encabezado de órdenes. Usar solo para totales generales sin desglosar por producto.",
+            "columns": {
+                "SalesOrderID": {
+                    "synonyms": [
+                        "id orden"
+                    ]
+                },
+                "OrderDate": {
+                    "synonyms": [
+                        "fecha",
+                        "fecha de venta"
+                    ],
+                    "roles": [
+                        "date"
+                    ],
+                    "time_grains": [
+                        "year",
+                        "month",
+                        "day"
+                    ]
+                },
+                "TotalDue": {
+                    "synonyms": [
+                        "total factura"
+                    ],
+                    "description": "Total de la factura completa. No usar en joins con productos."
+                }
+            }
+        },
+        "Sales.SalesOrderDetail": {
+            "alias": "detalles de orden",
+            "role": "fact",
+            "description": "Líneas de detalle de cada orden. Usar para desgloses por producto.",
+            "columns": {
+                "SalesOrderID": {
+                    "synonyms": [
+                        "id orden"
+                    ]
+                },
+                "ProductID": {
+                    "synonyms": [
+                        "id producto"
+                    ]
+                },
+                "LineTotal": {
+                    "synonyms": [
+                        "subtotal linea",
+                        "monto linea"
+                    ]
+                }
+            },
+            "measures": {
+                "total_ventas": {
+                    "expression": "SUM(Sales.SalesOrderDetail.LineTotal)",
+                    "synonyms": [
+                        "ventas totales",
+                        "ingresos",
+                        "total vendido"
+                    ],
+                    "description": "Cálculo estándar de ventas. Evita duplicados al unir con productos."
+                }
+            }
+        },
+        "Production.Product": {
+            "alias": "productos",
+            "role": "dimension",
+            "description": "Catálogo de productos",
+            "columns": {
+                "ProductID": {
+                    "synonyms": [
+                        "id producto"
+                    ]
+                },
+                "Name": {
+                    "synonyms": [
+                        "producto",
+                        "nombre producto"
+                    ]
+                }
+            }
+        }
+    },
+    "relationships": [
+        {
+            "from": "Sales.SalesOrderHeader.SalesOrderID",
+            "to": "Sales.SalesOrderDetail.SalesOrderID",
+            "type": "one-to-many"
+        },
+        {
+            "from": "Sales.SalesOrderDetail.ProductID",
+            "to": "Production.Product.ProductID",
+            "type": "many-to-one"
+        }
+    ]
+}

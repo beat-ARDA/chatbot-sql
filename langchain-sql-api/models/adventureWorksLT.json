@@ -1,0 +1,176 @@
+{
+    "domain": "Ventas",
+    "tables": {
+        "SalesLT.SalesOrderHeader": {
+            "alias": "ordenes, ventas, facturas",
+            "role": "fact",
+            "description": "Encabezado de las órdenes de venta",
+            "columns": {
+                "SalesOrderID": {
+                    "synonyms": [
+                        "id orden",
+                        "numero de venta"
+                    ]
+                },
+                "OrderDate": {
+                    "synonyms": [
+                        "fecha",
+                        "fecha de venta",
+                        "cuando se vendio"
+                    ],
+                    "roles": [
+                        "date"
+                    ],
+                    "time_grains": [
+                        "year",
+                        "month",
+                        "day"
+                    ]
+                },
+                "TotalDue": {
+                    "synonyms": [
+                        "total",
+                        "importe",
+                        "monto total"
+                    ]
+                },
+                "CustomerID": {
+                    "synonyms": [
+                        "id cliente"
+                    ]
+                }
+            },
+            "measures": {
+                "total_ventas": {
+                    "expression": "SUM(SalesLT.SalesOrderHeader.TotalDue)",
+                    "synonyms": [
+                        "ventas totales",
+                        "ingresos",
+                        "cuanto ganamos"
+                    ]
+                },
+                "conteo_ordenes": {
+                    "expression": "COUNT(SalesLT.SalesOrderHeader.SalesOrderID)",
+                    "synonyms": [
+                        "numero de pedidos",
+                        "cantidad de ventas"
+                    ]
+                }
+            }
+        },
+        "SalesLT.SalesOrderDetail": {
+            "alias": "detalles, partidas",
+            "role": "fact",
+            "description": "Detalle de cada producto vendido en una orden",
+            "columns": {
+                "SalesOrderID": {
+                    "synonyms": [
+                        "id orden"
+                    ]
+                },
+                "ProductID": {
+                    "synonyms": [
+                        "id producto"
+                    ]
+                },
+                "OrderQty": {
+                    "synonyms": [
+                        "cantidad",
+                        "unidades"
+                    ]
+                },
+                "LineTotal": {
+                    "synonyms": [
+                        "subtotal linea"
+                    ]
+                }
+            }
+        },
+        "SalesLT.Product": {
+            "alias": "productos, catalogo",
+            "role": "dimension",
+            "description": "Maestro de productos",
+            "columns": {
+                "ProductID": {
+                    "synonyms": [
+                        "id producto"
+                    ]
+                },
+                "Name": {
+                    "synonyms": [
+                        "producto",
+                        "nombre producto",
+                        "articulo"
+                    ]
+                },
+                "ProductNumber": {
+                    "synonyms": [
+                        "sku",
+                        "codigo producto"
+                    ]
+                },
+                "Color": {
+                    "synonyms": [
+                        "color"
+                    ]
+                },
+                "StandardCost": {
+                    "synonyms": [
+                        "costo"
+                    ]
+                },
+                "ListPrice": {
+                    "synonyms": [
+                        "precio de lista",
+                        "precio"
+                    ]
+                }
+            }
+        },
+        "SalesLT.Customer": {
+            "alias": "clientes",
+            "role": "dimension",
+            "description": "Información de clientes",
+            "columns": {
+                "CustomerID": {
+                    "synonyms": [
+                        "id cliente"
+                    ]
+                },
+                "FirstName": {
+                    "synonyms": [
+                        "nombre"
+                    ]
+                },
+                "LastName": {
+                    "synonyms": [
+                        "apellido"
+                    ]
+                },
+                "CompanyName": {
+                    "synonyms": [
+                        "empresa",
+                        "compañia"
+                    ]
+                }
+            }
+        }
+    },
+    "relationships": [
+        {
+            "from": "SalesLT.SalesOrderHeader.SalesOrderID",
+            "to": "SalesLT.SalesOrderDetail.SalesOrderID",
+            "type": "one-to-many"
+        },
+        {
+            "from": "SalesLT.SalesOrderDetail.ProductID",
+            "to": "SalesLT.Product.ProductID",
+            "type": "many-to-one"
+        },
+        {
+            "from": "SalesLT.SalesOrderHeader.CustomerID",
+            "to": "SalesLT.Customer.CustomerID",
+            "type": "many-to-one"
+        }
+    ]
+}

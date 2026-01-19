@@ -1,84 +1,53 @@
-// index.js con mejoras tipo ThoughtSpot
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
-import { SnowflakeDb } from "./config/dbSnowflake.js";
 import { readFile } from "fs/promises";
 
-const file = await readFile(
-    new URL("./models/shipments.json", import.meta.url)
-);
-const semanticModel = JSON.parse(file);
+import { SnowflakeDb } from "./config/dbSnowflake.js";
+import { SqlServerDb } from "./config/dbSql.js";
+import { snowflakeSystemPrompt } from "./prompts/snowflakePrompt.js";
+import { sqlServerSystemPrompt } from "./prompts/sqlServerPrompt.js";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const dbSnowflake = new SnowflakeDb();
+const DB_TYPE = process.env.DB_TYPE || "SQLSERVER";
+
+let db;
+let systemInstructions;
+let modelPath;
+
+if (DB_TYPE === "SNOWFLAKE") {
+    db = new SnowflakeDb();
+    systemInstructions = snowflakeSystemPrompt;
+    modelPath = "./models/shipments.json";
+} else {
+    db = new SqlServerDb();
+    systemInstructions = sqlServerSystemPrompt;
+    modelPath = "./models/adventureWorks.json";
+}
+
+const semanticModel = JSON.parse(await readFile(new URL(modelPath, import.meta.url)));
 
 const model = new ChatOpenAI({
-    modelName: "gpt-4o",
+    modelName: "gpt-4o-mini",
     temperature: 0,
-    openAIApiKey: process.env.OPENAI_API_KEY,
 });
 
-const prompt = ChatPromptTemplate.fromMessages([[
-    "system",
-    `
-    Eres un generador experto de SQL Snowflake.
-
-     Tarea:
-    - Convierte la pregunta en SQL usando las siguientes guías:
-    - Tabla principal: V_PROD_SHIPMENTS si es sobre envíos.
-    - Usa COUNT(DISTINCT ...) para conteos únicos.
-    - Usa DATEADD, DATE_TRUNC, EXTRACT para cálculos de fecha.
-    - Usa medidas predefinidas si existen.
-    - Si necesitas detalles de clientes, realiza JOIN explícito a V_PROD_COMPANIES.
-
-    Modelo semántico disponible:
-    {semantic}
-
-    Esquema de base de datos:
-    {schema}
-
-    Ejemplos:
-    - Pregunta: ¿Cuántos envíos se realizaron este mes?
-    SQL: 
-    SELECT COUNT(ID) AS total_envios
-    FROM V_PROD_SHIPMENTS
-    WHERE DATE_TRUNC('month', CREATED_AT) = DATE_TRUNC('month', CURRENT_DATE());
-
-    - Pregunta: ¿Cantidad de clientes únicos que enviaron en los últimos 3 meses?
-    SQL: 
-    SELECT COUNT(DISTINCT COMPANY_ID) AS clientes_unicos
-    FROM V_PROD_SHIPMENTS
-    WHERE CREATED_AT >= DATEADD(month, -3, CURRENT_DATE());
-
-    - Pregunta: ¿Total de guías por mes en el último año?
-    SQL:
-    SELECT DATE_TRUNC('month', CREATED_AT) AS mes, COUNT(ID) AS total_envios
-    FROM V_PROD_SHIPMENTS
-    WHERE CREATED_AT >= DATEADD(month, -12, CURRENT_DATE())
-    GROUP BY mes
-    ORDER BY mes;
-
-    Importante:
-    - Solo responde con SQL válido.
-    - No expliques nada, solo responde con el query.
-
-    Pregunta del usuario:
-    {question}
-`]]);
+const prompt = ChatPromptTemplate.fromMessages([
+    ["system", systemInstructions]
+]);
 
 function cleanSqlOutput(sqlText) {
     return sqlText
-        .replace(/^```sql\s*/i, '')  // elimina ```sql al inicio
-        .replace(/^```/i, '')         // elimina ``` si aparece solo
-        .replace(/```$/i, '')         // elimina ``` al final
-        .trim();                      // elimina espacios
+        .replace(/^```sql\s*/i, '')
+        .replace(/^```/i, '')
+        .replace(/```$/i, '')
+        .trim();
 }
 
 const chain = RunnableSequence.from([prompt, model]);
@@ -105,45 +74,29 @@ function buildSemanticText(semanticModel) {
 app.post("/sql", async (req, res) => {
     try {
         let { question } = req.body;
-
         const semanticText = buildSemanticText(semanticModel);
 
-        const sql = await chain.invoke({
+        const sqlResponse = await chain.invoke({
             question,
-            schema: dbSnowflake.getSchemaInfo(),
+            schema: db.getSchemaInfo(),
             semantic: semanticText,
         });
 
-        const output =
-            typeof sql === "string"
-                ? sql
-                : sql?.content || sql?.kwargs?.content || sql?.text || JSON.stringify(sql);
+        const sqlText = cleanSqlOutput(sqlResponse?.content || sqlResponse);
 
-        const cleanedSql = typeof output === "string" ? output : JSON.stringify(output);
+        console.log(`📝 SQL [${DB_TYPE}]:`, sqlText);
 
-        const sqlText = cleanSqlOutput(cleanedSql);
+        const queryResult = await db.executeQuery(sqlText);
 
-        console.log("📝 SQL a ejecutar:", sqlText);
-
-        const queryResult = await dbSnowflake.executeQuery(sqlText);
-
-        res.json({
-            sql: sqlText,
-            result: queryResult
-        });
+        res.json({ sql: sqlText, result: queryResult });
     } catch (err) {
-        console.error("❌ Error general:", err);
-        res.status(500).json({ error: "Error al generar SQL", detail: err.message });
+        res.status(500).json({ error: "Error", detail: err.message });
     }
 });
 
-dbSnowflake
-    .connect()
-    .then(() => {
-        app.listen(3001, () => {
-            console.log("🧠 API de LangChain mejorada escuchando en http://localhost:3001");
-        });
-    })
-    .catch((err) => {
-        console.error("💥 No se pudo inicializar el servidor por error en conexión:", err.message);
+db.connect().then(() => {
+    const PORT = process.env.PORT || 3001;
+    app.listen(3001, () => {
+        console.log(`🚀 Engine [${DB_TYPE}] corriendo en http://localhost:3001`);
     });
+});

@@ -10,10 +10,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Bar, Line } from "react-chartjs-2"; // 👈 puedes usar Bar o Line
+import { Bar, Line } from "react-chartjs-2";
 import "./App.css";
 
-// Registrar componentes de Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -42,7 +41,6 @@ function App() {
       setSql(res.data.sql || "No se generó SQL.");
       setResult(res.data.result || []);
     } catch (err) {
-      console.error(err);
       setSql("Error generando la consulta.");
       setResult([]);
     }
@@ -50,13 +48,12 @@ function App() {
     setLoading(false);
   };
 
-  // 🔥 Construir datos para la gráfica si hay resultados
   const chartData = result.length > 0 ? {
-    labels: result.map((row) => Object.values(row)[0]), // primer columna como etiqueta
+    labels: result.map((row) => Object.values(row)[0]),
     datasets: [
       {
         label: "Valor",
-        data: result.map((row) => Object.values(row)[1]), // segunda columna como valor
+        data: result.map((row) => Object.values(row)[1]),
         backgroundColor: "rgba(75, 192, 192, 0.5)",
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,
