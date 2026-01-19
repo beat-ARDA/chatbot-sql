@@ -36,7 +36,7 @@ function App() {
     setResult([]);
 
     try {
-      const res = await axios.post(`${import.meta.env.REACT_APP_API_URL}/sql`, { question });
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/sql`, { question });
 
       setSql(res.data.sql || "No se generó SQL.");
       setResult(res.data.result || []);
