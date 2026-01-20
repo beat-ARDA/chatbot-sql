@@ -1,5 +1,4 @@
 {
-    "domain": "Ventas AdventureWorks",
     "tables": {
         "Sales.SalesOrderHeader": {
             "alias": "ordenes, ventas",

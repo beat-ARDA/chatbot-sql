@@ -54,7 +54,20 @@ function cleanSqlOutput(sqlText) {
 
 const chain = RunnableSequence.from([prompt, model]);
 
-
+/**
+ * Genera una representación textual estructurada del modelo semántico para el LLM.
+ * * @description Esta función actúa como un "traductor de contexto". Transforma metadatos 
+ * técnicos y reglas de negocio (sinónimos, medidas, relaciones) en un formato de lenguaje 
+ * natural optimizado para que el modelo de IA comprenda el dominio de datos sin ambigüedades.
+ * * @param {Object} semanticModel - El objeto que define el dominio de datos.
+ * @param {Object} semanticModel.tables - Diccionario donde la llave es el nombre físico de la tabla (ej: 'Sales.SalesOrderDetail').
+ * @param {Object} semanticModel.tables[].columns - Definición de campos técnicos con sus alias de negocio.
+ * @param {Object} [semanticModel.tables[].measures] - Fórmulas de agregación predefinidas (KPIs) para evitar alucinaciones del LLM.
+ * @param {Array} semanticModel.relationships - Lista de objetos que definen la integridad referencial (JOINs sugeridos).
+ * * @returns {string} Un bloque de texto multilínea formateado para ser inyectado directamente en el System Prompt.
+ * * @example
+ * // Retorna: "Tabla: Production.Product (productos) — Catálogo de productos Tipo: dimension..."
+ */
 function buildSemanticText(semanticModel) {
     const tablesText = Object.entries(semanticModel.tables).map(([table, def]) => {
 

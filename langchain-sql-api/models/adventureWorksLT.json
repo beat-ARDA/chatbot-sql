@@ -1,5 +1,4 @@
 {
-    "domain": "Ventas",
     "tables": {
         "SalesLT.SalesOrderHeader": {
             "alias": "ordenes, ventas, facturas",

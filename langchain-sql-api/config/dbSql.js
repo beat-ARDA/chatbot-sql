@@ -23,6 +23,17 @@ export class SqlServerDb {
         this.schemaInfo = "Cargando esquema...";
     }
 
+    /**
+     * Establece la conexión con SQL Server y construye dinámicamente el catálogo de metadatos.
+     * * @description Esta función realiza tres operaciones críticas:
+     * 1. Autenticación con el servidor mediante el pool de conexiones.
+     * 2. Reflexión de la base de datos (Database Reflection) consultando INFORMATION_SCHEMA.
+     * 3. Transformación de metadatos planos a una estructura jerárquica para optimizar el prompt del LLM.
+     * * @async
+     * @method connect
+     * @throws {Error} Si la conexión falla o las credenciales son incorrectas.
+     * @returns {Promise<void>} No retorna valor, pero inicializa la propiedad `this.schemaInfo`.
+     */
     async connect() {
         try {
             const pool = await sql.connect(this.config);
