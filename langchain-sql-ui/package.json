@@ -13,10 +13,11 @@
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.1.0",
     "react-scripts": "5.0.1",
+    "serve": "^14.2.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "serve -s build",
+    "start": "serve -s .",
     "build": "react-scripts build"
   },
   "eslintConfig": {

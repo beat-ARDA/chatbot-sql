@@ -42,7 +42,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: node-app
-          path: ./release
+          path: .
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -52,9 +52,7 @@ jobs:
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D13B2105F0BA45F4850D493157B6C98D }}
 
       - name: "Deploy to Azure Web App"
-        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: "chatsqlui"
-          slot-name: "Production"
-          package: . # Subimos el contenido del build descargado
+          package: .
