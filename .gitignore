@@ -1,2 +1,14 @@
-node_modules
-.env
+# --- Backend (langchain-sql-api) ---
+langchain-sql-api/node_modules/
+langchain-sql-api/.env
+
+# --- Frontend (langchain-sql-ui) ---
+langchain-sql-ui/node_modules/
+langchain-sql-ui/build/
+langchain-sql-ui/.env
+langchain-sql-ui/.env.local
+
+# --- Generales ---
+.DS_Store
+.vscode/
+npm-debug.log*
