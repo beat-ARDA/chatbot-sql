@@ -63,7 +63,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>🧠 SQL desde lenguaje natural</h1>
+      <h1>SQL desde lenguaje natural</h1>
       <form onSubmit={handleSubmit}>
         <input
           type="text"

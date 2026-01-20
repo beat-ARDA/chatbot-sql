@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - arda/sqlVersion
+    paths:
+      - "langchain-sql-ui/**"
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
