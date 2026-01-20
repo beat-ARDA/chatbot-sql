@@ -34,6 +34,7 @@ export class SqlServerDb {
                 WHERE TABLE_SCHEMA IN ('Sales', 'Production', 'Person')
             `);
 
+            //crea un objeto para agrupar las columnas por tabla
             const agrupado = {};
             result.recordset.forEach(({ TABLE_SCHEMA, TABLE_NAME, COLUMN_NAME }) => {
                 const fullTableName = `${TABLE_SCHEMA}.${TABLE_NAME}`;
@@ -41,6 +42,7 @@ export class SqlServerDb {
                 agrupado[fullTableName].push(COLUMN_NAME);
             });
 
+            //Genera el texto del schema de manera dinamica
             this.schemaInfo = Object.entries(agrupado)
                 .map(([table, columns]) => `Tabla: ${table}(${columns.join(", ")})`)
                 .join("\n");

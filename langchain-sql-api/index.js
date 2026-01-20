@@ -33,11 +33,13 @@ if (DB_TYPE === "SNOWFLAKE") {
 
 const semanticModel = JSON.parse(await readFile(new URL(modelPath, import.meta.url)));
 
+// Inicializa el modelo de lenguaje
 const model = new ChatOpenAI({
     modelName: "gpt-4o-mini",
     temperature: 0,
 });
 
+// Configura el prompt con las instrucciones del sistema
 const prompt = ChatPromptTemplate.fromMessages([
     ["system", systemInstructions]
 ]);
@@ -52,8 +54,10 @@ function cleanSqlOutput(sqlText) {
 
 const chain = RunnableSequence.from([prompt, model]);
 
+
 function buildSemanticText(semanticModel) {
     const tablesText = Object.entries(semanticModel.tables).map(([table, def]) => {
+
         const columns = Object.entries(def.columns).map(([col, meta]) => {
             const synonyms = meta.synonyms.length ? ` Sinónimos: ${meta.synonyms.join(", ")}` : ""; return `    - ${col}:${synonyms}`;
         }).join("\n");

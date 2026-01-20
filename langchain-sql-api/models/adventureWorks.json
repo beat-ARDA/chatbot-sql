@@ -1,10 +1,10 @@
 {
-    "domain": "Ventas",
+    "domain": "Ventas AdventureWorks",
     "tables": {
         "Sales.SalesOrderHeader": {
             "alias": "ordenes, ventas",
             "role": "fact",
-            "description": "Encabezado de órdenes. Usar solo para totales generales sin desglosar por producto.",
+            "description": "Encabezado de órdenes. Usar para totales generales y métricas de clientes.",
             "columns": {
                 "SalesOrderID": {
                     "synonyms": [
@@ -18,18 +18,45 @@
                     ],
                     "roles": [
                         "date"
-                    ],
-                    "time_grains": [
-                        "year",
-                        "month",
-                        "day"
+                    ]
+                },
+                "CustomerID": {
+                    "synonyms": [
+                        "id cliente",
+                        "cliente"
                     ]
                 },
                 "TotalDue": {
                     "synonyms": [
                         "total factura"
+                    ]
+                }
+            },
+            "measures": {
+                "conteo_ordenes": {
+                    "expression": "COUNT(Sales.SalesOrderHeader.SalesOrderID)",
+                    "synonyms": [
+                        "número de pedidos",
+                        "cantidad de ventas",
+                        "cuántas órdenes"
                     ],
-                    "description": "Total de la factura completa. No usar en joins con productos."
+                    "description": "Cuenta el número total de transacciones realizadas."
+                },
+                "promedio_venta": {
+                    "expression": "AVG(Sales.SalesOrderHeader.TotalDue)",
+                    "synonyms": [
+                        "ticket promedio",
+                        "venta media"
+                    ],
+                    "description": "Calcula el valor promedio de las facturas."
+                },
+                "total_clientes_unicos": {
+                    "expression": "COUNT(DISTINCT Sales.SalesOrderHeader.CustomerID)",
+                    "synonyms": [
+                        "cuántos clientes",
+                        "base de clientes"
+                    ],
+                    "description": "Cuenta cuántos clientes distintos han comprado."
                 }
             }
         },
@@ -48,10 +75,15 @@
                         "id producto"
                     ]
                 },
+                "OrderQty": {
+                    "synonyms": [
+                        "cantidad pedida",
+                        "unidades"
+                    ]
+                },
                 "LineTotal": {
                     "synonyms": [
-                        "subtotal linea",
-                        "monto linea"
+                        "subtotal linea"
                     ]
                 }
             },
@@ -61,9 +93,17 @@
                     "synonyms": [
                         "ventas totales",
                         "ingresos",
-                        "total vendido"
+                        "monto vendido"
                     ],
-                    "description": "Cálculo estándar de ventas. Evita duplicados al unir con productos."
+                    "description": "Suma el total de todas las líneas de detalle."
+                },
+                "unidades_vendidas": {
+                    "expression": "SUM(Sales.SalesOrderDetail.OrderQty)",
+                    "synonyms": [
+                        "volumen de ventas",
+                        "total unidades"
+                    ],
+                    "description": "Suma la cantidad física de productos vendidos."
                 }
             }
         },
@@ -80,8 +120,24 @@
                 "Name": {
                     "synonyms": [
                         "producto",
-                        "nombre producto"
+                        "nombre artículo"
                     ]
+                },
+                "ListPrice": {
+                    "synonyms": [
+                        "precio de lista",
+                        "precio sugerido"
+                    ]
+                }
+            },
+            "measures": {
+                "precio_maximo": {
+                    "expression": "MAX(Production.Product.ListPrice)",
+                    "synonyms": [
+                        "producto más caro",
+                        "precio más alto"
+                    ],
+                    "description": "Identifica el precio más alto en el catálogo."
                 }
             }
         }

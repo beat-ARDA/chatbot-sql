@@ -49,11 +49,12 @@ function App() {
   };
 
   const chartData = result.length > 0 ? {
+    //Obtengo el mes
     labels: result.map((row) => Object.values(row)[0]),
     datasets: [
       {
         label: "Valor",
-        data: result.map((row) => Object.values(row)[1]),
+        data: result.map((row) => Object.values(row)[1]),//Total de ventas
         backgroundColor: "rgba(75, 192, 192, 0.5)",
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,
