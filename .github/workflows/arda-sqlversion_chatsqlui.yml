@@ -57,4 +57,4 @@ jobs:
         with:
           app-name: "chatsqlui"
           slot-name: "Production"
-          package: ./release # Subimos el contenido del build descargado
+          package: . # Subimos el contenido del build descargado
